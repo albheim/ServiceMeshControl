@@ -59,7 +59,7 @@ t = gettime(datas[1])[1:downsampling:end]
 
 mkpath("./fig")
 
-defaults(size=(380, 270))
+default(size=(380, 270))
 
 # Reward
 reward_data = getvalues.(datas, "training/reward"; smoothing_window=500, downsampling)
