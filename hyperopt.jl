@@ -106,8 +106,6 @@ ho = @phyperopt for i = 100,
 end 
 
 # printmax(ho)
-plot(ho, size=(1200, 900))
+# plot(ho, size=(1200, 900))
 
-
-params = ho.params .=> ho.maximizer
-BSON.@save "$(homedir())/results/$(env)" params=params
+BSON.@save "$(homedir())/servicemesh_results/$(env)" params=params
