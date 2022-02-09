@@ -53,22 +53,31 @@ data = Dict(
 datas = [loaddata(data[k]) for k in keys(data)]
 names = reshape(String.(keys(data)), (1, :))
 
-downsampling = 10
+downsampling = 500
 
 t = gettime(datas[1])[1:downsampling:end]
 
+mkpath("./fig")
+
+defaults(size=(380, 270))
+
 # Reward
 reward_data = getvalues.(datas, "training/reward"; smoothing_window=500, downsampling)
-reward = plot(t, reward_data, title="Reward", xaxis="Time [Days]", ylim=[10, 30], label=names, legend=:bottomright)
-savefig(reward, "fig/reward.tex")
+reward_plot = plot(t, reward_data, title="Reward", xaxis="Time [Days]", ylim=[10, 30], label=names, legend=:bottomright)
+savefig(reward_plot, "fig/reward.tex")
 
 # Scale 1
 scale1_data = getvalues.(datas, "MS1/scale"; smoothing_window=500, downsampling)
 util1_data = getvalues.(datas, "MS1/utilization"; smoothing_window=500, downsampling)
 load1_data = map(x -> x[1] .* x[2], zip(scale1_data, util1_data))
-scale = plot(t, scale1_data, title="MS1 scale", yaxis="Scale", xaxis="Time [Days]", label=names, legend=:bottomright, ylim=[2, 6])
-plot!(scale, t, load1_data, color=1:4, linestyle=:dash)
-savefig(scale, "fig/scale.tex")
+scale_plot = plot(title="MS1 scale", yaxis="Scale", xaxis="Time [Days]", label=names, legend=:bottomright, ylim=[2, 6])
+for i in 1:4
+    plot!(scale_plot, t, scale1_data[i], color=i, label=names[i])
+    plot!(scale_plot, t, load1_data[i], color=i, linestyle=:dash, label="")
+end
+plot!(scale_plot, [1], [0], label="Scale", color="black")
+plot!(scale_plot, [1], [0], linestyle=:dash, label="Load", color="black")
+savefig(scale_plot, "fig/scale.tex")
 
 
 
