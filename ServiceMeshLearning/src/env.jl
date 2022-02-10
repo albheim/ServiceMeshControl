@@ -88,12 +88,12 @@ function create_env(; seed=37, microservices=2, env=:default, dt=0.5, kwargs...)
             seed = seed,
             kwargs...
         )
-    elseif env === :simpleflipsplit4
+    elseif env === :simpleflipsplit2
         dt = 1.0
         instance_cost = 1.0
         jobtypes = JobParams[
             JobParams(
-                path = [1, 2, 4],
+                path = [1, 2, 3],
                 time = Float64[1, 1, 1],
                 deadline = 3.5, 
                 value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
@@ -120,12 +120,44 @@ function create_env(; seed=37, microservices=2, env=:default, dt=0.5, kwargs...)
             instance_cost = instance_cost, 
             seed = seed,
         )
-    elseif env === :simpleflipsplit2
-        dt = 1.0
+    elseif env === :simpleflipsplit3
+        dt = 0.1
         instance_cost = 1.0
         jobtypes = JobParams[
             JobParams(
                 path = [1, 2, 3],
+                time = Float64[0.2, 1, 0.1],
+                deadline = 2.0, 
+                value = 10.0, 
+                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
+            ),
+            JobParams(
+                path = [1, 3, 4],
+                time = Float64[0.2, 0.1, 0.7],
+                deadline = 2.0, 
+                value = 10.0,
+                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
+            ),
+        ]
+        ServiceMeshEnv(;
+            kwargs...,
+            microservices = 4, 
+            jobtypes = jobtypes,
+            min_scale = 0,
+            max_scale = 40, 
+            max_queue = 5, 
+            close_time = 0.0, 
+            boot_time = 1.0, 
+            dt = dt,
+            instance_cost = instance_cost, 
+            seed = seed,
+        )
+    elseif env === :simpleflipsplit4
+        dt = 1.0
+        instance_cost = 1.0
+        jobtypes = JobParams[
+            JobParams(
+                path = [1, 2, 4],
                 time = Float64[1, 1, 1],
                 deadline = 3.5, 
                 value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
