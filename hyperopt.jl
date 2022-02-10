@@ -1,4 +1,4 @@
-using DistributedEnvironments
+using DistributedEnvironments, Distributed
 using Plots
 gr()
 
@@ -53,13 +53,17 @@ nodes = readlines("/var/local/hosts")
     value
 end
 
-@everywhere params = Dict(
+# To have common name
+tag = "HO_$(Dates.format(now(), "ymmdd_HHMMSS"))"
+
+@everywhere ho_params = Dict(
     :relative => :SimpleAgent,
     :env => :simpleflipsplit4,
     :logging => true,
     :timesteps => 5_000_000,
     #seed_iterations = 1,
     :seed => 37,
+    :tag => $tag,
 )
 
 ho = @phyperopt for i = 100, 
@@ -89,8 +93,8 @@ ho = @phyperopt for i = 100,
     # It is also relative to the SimpleAgent reward
     runexp(;
         # Default values
-        tag = "ho_search_$(i)",
-        params...,
+        ho_params...,
+        tag = ho_params[:tag] * "/$i",
 
         # HO values
         lr_alpha, target_entropy, 
@@ -109,7 +113,19 @@ ho = @phyperopt for i = 100,
     )
 end 
 
-# printmax(ho)
-# plot(ho, size=(1200, 900))
+plot(ho, size=(1200, 900))
 
-BSON.@save "$(homedir())/servicemesh_results/$(params[:env])/ho_$(Dates.format(now(), "yymmdd_HHMMSS"))" ho=ho
+basepath = joinpath(homedir(), "servicemesh_results", "$(ho_params[:env])", tag)
+mkpath(basepath)
+open(joinpath(basepath, "HO_maximizer.txt"), "w") do io
+    println(io, "# Set params")
+    for (k, v) in ho_params
+        println(io, "$k = $v")
+    end
+    println(io, "\n# Optimized params")
+    for (k, v) in zip(ho.params, ho.maximizer)
+        println(io, "$k = $v")
+    end
+    # printmax(io, ho)
+end
+
