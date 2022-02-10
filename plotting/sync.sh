@@ -1,1 +1,0 @@
-rsync -rauL erdc:git/servicemesh_results ~

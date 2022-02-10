@@ -53,7 +53,6 @@ function create_experiment(;
         push!(hooks, LogEveryNStep(save_dir; n=log_every))
         push!(hooks, DoOnExit( 
             function(agent, env) 
-                @show "hello"
                 # Log all hyperparam data
                 open("$(save_dir)/params.txt", "w") do io
                     params = (; alg, tag, timesteps, n_env, log_every, logging, running_reward_steps, verbose, env, kwargs...)
