@@ -53,6 +53,15 @@ nodes = readlines("/var/local/hosts")
     value
 end
 
+@everywhere params = Dict(
+    :relative => :SimpleAgent,
+    :env => :simpleflipsplit4,
+    :logging => true,
+    :timesteps => 5_000_000,
+    #seed_iterations = 1,
+    :seed => 37,
+)
+
 ho = @phyperopt for i = 100, 
         lr_alpha = [1f-5, 5f-5, 1f-4],
         target_entropy = [2f0, 4f0, 7f0, 10f0],
@@ -81,12 +90,7 @@ ho = @phyperopt for i = 100,
     runexp(;
         # Default values
         tag = "ho_search_$(i)",
-        relative = :SimpleAgent,
-        env = :simpleflipsplit,
-        logging = true, 
-        timesteps = 5_000_000,
-        #seed_iterations = 1,
-        seed = 37,
+        params...,
 
         # HO values
         lr_alpha, target_entropy, 
@@ -108,4 +112,4 @@ end
 # printmax(ho)
 # plot(ho, size=(1200, 900))
 
-BSON.@save "$(homedir())/servicemesh_results/$(env)" params=params
+BSON.@save "$(homedir())/servicemesh_results/$(params[:env])/ho_$(Dates.format(now(), "yymmdd_HHMMSS"))" ho=ho
