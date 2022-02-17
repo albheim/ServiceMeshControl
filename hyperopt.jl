@@ -10,13 +10,11 @@ nodes = readlines("/var/local/hosts")
 @everywhere function runexp(; tag="test", seed_iterations=1, seed=37, relative=:none, env=:simpleflip, alg=:SAC, logging=false, kwargs...)
     println("starting - tag=$(tag)")
     t = time()
-    microservices = 3
     value = sum(seed_offset -> run_experiment(; 
         kwargs...,
 
         alg = alg, 
         env = env,
-        microservices,
 
         seed = seed + seed_offset,
         tag = tag,

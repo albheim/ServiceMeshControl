@@ -1,4 +1,4 @@
-function create_env(; seed=37, microservices=2, env=:default, dt=0.5, kwargs...)
+function create_env(; seed=37, env=:default, dt=0.5, kwargs...)
     boot_time=2.0
     instance_cost=1.0
     if env === :simpleflipsplit2
@@ -64,8 +64,7 @@ function create_env(; seed=37, microservices=2, env=:default, dt=0.5, kwargs...)
             dt = dt,
             instance_cost = instance_cost, 
             seed = seed,
-        )
-    elseif env === :simpleflipsplit3
+        ) elseif env === :simpleflipsplit3
         dt = 0.1
         instance_cost = 1.0
         jobtypes = JobParams[
@@ -164,6 +163,7 @@ function create_env(; seed=37, microservices=2, env=:default, dt=0.5, kwargs...)
     elseif env === :simpleflip
         dt = 1.0
         instance_cost = 1.0
+        microservices = 2,
         jobtypes = JobParams[
             JobParams(
                 path = collect(1:microservices), 
