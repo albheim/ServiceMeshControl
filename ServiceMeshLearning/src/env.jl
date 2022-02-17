@@ -1,99 +1,44 @@
 function create_env(; seed=37, microservices=2, env=:default, dt=0.5, kwargs...)
     boot_time=2.0
     instance_cost=1.0
-    if env === :simple
-        dt = 1.0
-        jobtypes = JobParams[
-            #JobParams([1], [0.1], 100, 10, ConstantArrival(5))
-            JobParams(
-                path=[1], 
-                time=[1.0], 
-                deadline=2.0, 
-                value=10.0, 
-                arrival=SinusArrival(40 * dt, 35 * dt, 6*3600)
-                #ConstantArrival(200 * dt)
-            )
-        ]
-        ServiceMeshEnv(;
-            microservices = 1, 
-            jobtypes = jobtypes,
-            max_scale = 100, 
-            max_queue = 100, 
-            boot_time = 2.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-            kwargs...
-        )
-    elseif env === :default
-        dt = 0.5
-        jobtypes = JobParams[
-            #JobParams([1], [0.1], 100, 10, ConstantArrival(5))
-            JobParams(
-                path=[1, 2, 3], 
-                time=[0.5, 0.5, 0.5], 
-                deadline=4.0, 
-                value=10.0, 
-                # arrival=PoissonWrapper(SinusArrival(100 * dt, 75 * dt, 24*3600)),
-                arrival=SinusArrival(100 * dt, 75 * dt, 24*3600),
-            ),
-            JobParams(
-                path=[1, 3], 
-                time=[0.5, 1.0], 
-                deadline=3.0, 
-                value=10.0, 
-                # arrival=PoissonWrapper(SinusArrival(75 * dt, 60 * dt, 24*3600)),
-                arrival=SinusArrival(75 * dt, 60 * dt, 24*3600),
-            ),
-        ]
-        ServiceMeshEnv(;
-            microservices = 3, 
-            jobtypes = jobtypes,
-            max_scale = 200, 
-            max_queue = 100, 
-            boot_time = boot_time, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-            kwargs...
-        )
-    elseif env === :designed
-        dt = 0.1
-        jobtypes = JobParams[
-            JobParams(
-                path=[1, 2, 3], 
-                time=[0.1, 0.2, 0.5], 
-                deadline=1.0, 
-                value=10.0, 
-                # arrival=PoissonWrapper(SinusArrival(100 * dt, 75 * dt, 24*3600)),
-                arrival=SinusArrival(100 * dt, 75 * dt, 24*3600),
-            ),
-            JobParams(
-                path=[1, 3], 
-                time=[0.1, 0.1], 
-                deadline=1.0, 
-                value=10.0, 
-                # arrival=PoissonWrapper(SinusArrival(75 * dt, 60 * dt, 24*3600)),
-                arrival=SinusArrival(75 * dt, 60 * dt, 24*3600),
-            ),
-        ]
-        ServiceMeshEnv(;
-            microservices = 3, 
-            jobtypes = jobtypes,
-            max_scale = 80, 
-            max_queue = 50, 
-            boot_time = boot_time, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-            kwargs...
-        )
-    elseif env === :simpleflipsplit2
+    if env === :simpleflipsplit2
         dt = 1.0
         instance_cost = 1.0
         jobtypes = JobParams[
             JobParams(
                 path = [1, 2, 3],
+                time = Float64[1, 1, 1],
+                deadline = 3.5, 
+                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
+                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
+            ),
+            JobParams(
+                path = [1, 3, 4],
+                time = Float64[1, 1, 1],
+                deadline = 3.5, 
+                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
+                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
+            ),
+        ]
+        ServiceMeshEnv(;
+            kwargs...,
+            microservices = 4, 
+            jobtypes = jobtypes,
+            min_scale = 0,
+            max_scale = 10, 
+            max_queue = 5, 
+            close_time = 0.0, 
+            boot_time = 1.0, 
+            dt = dt,
+            instance_cost = instance_cost, 
+            seed = seed,
+        )
+    elseif env === :simpleflipsplit2v2
+        dt = 1.0
+        instance_cost = 1.0
+        jobtypes = JobParams[
+            JobParams(
+                path = [1, 2, 4],
                 time = Float64[1, 1, 1],
                 deadline = 3.5, 
                 value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
@@ -145,38 +90,6 @@ function create_env(; seed=37, microservices=2, env=:default, dt=0.5, kwargs...)
             jobtypes = jobtypes,
             min_scale = 0,
             max_scale = 40, 
-            max_queue = 5, 
-            close_time = 0.0, 
-            boot_time = 1.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-        )
-    elseif env === :simpleflipsplit4
-        dt = 1.0
-        instance_cost = 1.0
-        jobtypes = JobParams[
-            JobParams(
-                path = [1, 2, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-            JobParams(
-                path = [1, 3, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-        ]
-        ServiceMeshEnv(;
-            kwargs...,
-            microservices = 4, 
-            jobtypes = jobtypes,
-            min_scale = 0,
-            max_scale = 10, 
             max_queue = 5, 
             close_time = 0.0, 
             boot_time = 1.0, 
@@ -272,57 +185,6 @@ function create_env(; seed=37, microservices=2, env=:default, dt=0.5, kwargs...)
             dt = dt,
             instance_cost = instance_cost, 
             seed = seed,
-        )
-    elseif env === :simplestream
-        dt = 1.0
-        jobtypes = JobParams[
-            JobParams(
-                path = [1, 2], 
-                time = [1.0, 1.0], 
-                deadline = 1.5, 
-                value = 100.0, 
-                arrival = StreamArrival(dt/10, 20.0), # every 100 s on avg there is a 20 s load stream added taking 1 machine for each step
-            ),
-        ]
-        ServiceMeshEnv(;
-            microservices = 2, 
-            jobtypes = jobtypes,
-            max_scale = 10, 
-            max_queue = 5, 
-            boot_time = 1.0, 
-            dt = dt,
-            instance_cost = 10.0, 
-            seed = seed,
-            kwargs...
-        )
-    elseif env === :stream
-        dt = 0.1
-        jobtypes = JobParams[
-            JobParams(
-                path=[1, 2, 3], 
-                time=[0.1, 0.2, 0.5], 
-                deadline=1.0, 
-                value=10.0, 
-                arrival=StreamArrival(dt/100, 100.0), # every 100 s on avg there is a 100 s load stream added taking 1 machine
-            ),
-            # JobParams(
-            #     path=[1, 3], 
-            #     time=[0.5, 5.0], 
-            #     deadline=8.0, 
-            #     value=10.0, 
-            #     arrival=StreamArrival(0.5, 2.0, 1.0),
-            # ),
-        ]
-        ServiceMeshEnv(;
-            microservices = 3, 
-            jobtypes = jobtypes,
-            max_scale = 10, 
-            max_queue = 1, 
-            boot_time = boot_time, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-            kwargs...
         )
     else
         throw(ArgumentError("no env for that tag."))
