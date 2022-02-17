@@ -46,6 +46,8 @@ nodes = readlines("/var/local/hosts")
     value
 end
 
+tag = joinpath("HO_$(Dates.format(now(), "yymmdd_HHMMSS"))", "ho_search")
+
 @everywhere params = Dict((;
     relative = :SimpleAgent,
     env = :simpleflipsplit4,
@@ -54,8 +56,8 @@ end
     #seed_iterations = 1,
     seed = 37,
     basepath = joinpath(homedir(), "servicemesh_results"),
+    tag = $tag,
 ))
-@everywhere params[:tag] = joinpath("$(params[:env])", "HO_$(Dates.format(now(), "yymmdd_HHMMSS"))", "ho_search")
 
 ho = @phyperopt for i = 100, 
         lr_alpha = [1f-5, 5f-5, 1f-4],
@@ -104,7 +106,20 @@ ho = @phyperopt for i = 100,
     )
 end 
 
-# printmax(ho)
-# plot(ho, size=(1200, 900))
+plot(ho, size=(1200, 900))
 
-BSON.@save joinpath("$(params[:basepath])", "$(params[:tag])") ho=ho
+basepath = joinpath(homedir(), "servicemesh_results", "$(ho_params[:env])", tag)
+mkpath(basepath)
+open(joinpath(basepath, "HO_maximizer.txt"), "w") do io
+    println(io, "# Set params")
+    for (k, v) in ho_params
+        println(io, "$k = $v")
+    end
+    println(io, "\n# Optimized params")
+    for (k, v) in zip(ho.params, ho.maximizer)
+        println(io, "$k = $v")
+    end
+    # printmax(io, ho)
+end
+
+BSON.@save joinpath("$(params[:basepath])", "$(params[:env])", "$(params[:tag])", "HO_maximizer.bson") ho=ho
