@@ -24,6 +24,7 @@ include("env.jl")
 function create_experiment(;
     alg::Symbol = :SAC,
     tag::String = "test",
+    basepath::String = joinpath(homedir(), "servicemesh_results"),
     timesteps::Int = 1_000_000,
     n_env = 1,
     log_every = 60,
@@ -48,7 +49,7 @@ function create_experiment(;
     hooks = AbstractHook[RunningReward(running_reward_steps; envmap = env -> env[!])]
     if logging
         curr_time = Dates.format(now(), "yymmdd_HHMMSS")
-        save_dir = mkpath(joinpath(homedir(), "servicemesh_results", "$(env)", tag, "$(alg)", "$curr_time"))
+        save_dir = mkpath(joinpath(basepath, "$(env)", tag, "$(alg)", "$curr_time"))
         verbose && @show save_dir
         push!(hooks, LogEveryNStep(save_dir; n=log_every))
         push!(hooks, DoOnExit( 
