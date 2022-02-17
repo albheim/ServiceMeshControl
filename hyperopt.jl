@@ -1,5 +1,5 @@
 using DistributedEnvironments
-using Plots
+using Plots, Dates
 gr()
 
 nodes = readlines("/var/local/hosts")
@@ -11,41 +11,34 @@ nodes = readlines("/var/local/hosts")
     println("starting - tag=$(tag)")
     t = time()
     microservices = 3
-    tag_ext = "default"
-    
-    tag *= "_" * tag_ext
-    value = 
-    #sum(seed_offset -> 
-    run_experiment(; 
+    value = sum(seed_offset -> run_experiment(; 
+        kwargs...,
+
         alg = alg, 
         env = env,
         microservices,
 
-        seed = seed,# + seed_offset,
+        seed = seed + seed_offset,
         tag = tag,
         verbose = false,
         logging = logging,
         log_every = 600,
-
-        kwargs...
-    )# for seed_offset in 1:seed_iterations)
+    ) for seed_offset in 1:seed_iterations)
 
     if relative != :none
-        value /= 
-        #sum(seed_offset -> 
-        run_experiment(; 
+        value /= sum(seed_offset -> run_experiment(; 
+            kwargs...,
+
             alg = relative, 
             env = env,
             microservices,
 
-            seed = seed,# + seed_offset,
+            seed = seed + seed_offset,
             tag = tag,
             verbose = false,
             logging = false,
             log_every = 600,
-
-            kwargs...
-        )# for seed_offset in 1:seed_iterations)
+        ) for seed_offset in 1:seed_iterations)
     end
 
     println("finished - value=$value - tag=$(tag) - time=$(time()-t)")
@@ -53,14 +46,16 @@ nodes = readlines("/var/local/hosts")
     value
 end
 
-@everywhere params = Dict(
-    :relative => :SimpleAgent,
-    :env => :simpleflipsplit4,
-    :logging => true,
-    :timesteps => 5_000_000,
+@everywhere params = Dict((;
+    relative = :SimpleAgent,
+    env = :simpleflipsplit4,
+    logging = true,
+    timesteps = 5_000_000,
     #seed_iterations = 1,
-    :seed => 37,
-)
+    seed = 37,
+    basepath = joinpath(homedir(), "servicemesh_results"),
+))
+@everywhere params[:tag] = joinpath("$(params[:env])", "HO_$(Dates.format(now(), "yymmdd_HHMMSS"))", "ho_search")
 
 ho = @phyperopt for i = 100, 
         lr_alpha = [1f-5, 5f-5, 1f-4],
@@ -89,8 +84,8 @@ ho = @phyperopt for i = 100,
     # It is also relative to the SimpleAgent reward
     runexp(;
         # Default values
-        tag = "ho_search_$(i)",
         params...,
+        tag = joinpath("$(params[:tag])", "$(i)"),
 
         # HO values
         lr_alpha, target_entropy, 
@@ -112,4 +107,4 @@ end
 # printmax(ho)
 # plot(ho, size=(1200, 900))
 
-BSON.@save "$(homedir())/servicemesh_results/$(params[:env])/ho_$(Dates.format(now(), "yymmdd_HHMMSS"))" ho=ho
+BSON.@save joinpath("$(params[:basepath])", "$(params[:tag])") ho=ho
