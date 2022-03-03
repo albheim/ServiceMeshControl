@@ -1,4 +1,4 @@
-function create_env(; seed=37, microservices=2, env=:default, dt=0.5, kwargs...)
+function create_env(; seed=37, env=:default, dt=0.5, kwargs...)
     boot_time=2.0
     instance_cost=1.0
     if env === :simpleflipsplit2
@@ -164,6 +164,7 @@ function create_env(; seed=37, microservices=2, env=:default, dt=0.5, kwargs...)
     elseif env === :simpleflip
         dt = 1.0
         instance_cost = 1.0
+        microservices = 2
         jobtypes = JobParams[
             JobParams(
                 path = collect(1:microservices), 
@@ -182,6 +183,38 @@ function create_env(; seed=37, microservices=2, env=:default, dt=0.5, kwargs...)
             max_queue = 5, 
             close_time = 0.0, 
             boot_time = 1.0, 
+            dt = dt,
+            instance_cost = instance_cost, 
+            seed = seed,
+        )
+    elseif env === :complex
+        dt = 0.1
+        instance_cost = 1.0
+        jobtypes = JobParams[
+            JobParams(
+                path = [1, 2, 4, 2, 1], 
+                time = [0.1, 0.1, 0.2, 0.4, 0.1], 
+                deadline = 1.5, 
+                value = 10.0, # In case of booting factor 2 could help with not finding strange minima?
+                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
+            ),
+            JobParams(
+                path = [1, 3, 4, 3, 1],
+                time = [0.1, 0.2, 0.4, 0.1, 0.1],
+                deadline = 1.5, 
+                value = 10.0, # In case of booting factor 2 could help with not finding strange minima?
+                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
+            ),
+        ]
+        ServiceMeshEnv(;
+            kwargs...,
+            microservices = 4, 
+            jobtypes = jobtypes,
+            min_scale = 0,
+            max_scale = 20, 
+            max_queue = 10, 
+            close_time = 5.0, 
+            boot_time = 5.0, 
             dt = dt,
             instance_cost = instance_cost, 
             seed = seed,
