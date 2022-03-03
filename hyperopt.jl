@@ -6,7 +6,7 @@ gr()
 using DistributedEnvironments
 
 nodes = readlines("/var/local/hosts")[1:16]
-@initcluster nodes sync=true workers_per_machine=1 threads_per_worker=:auto
+@initcluster nodes sync=true workers_per_machine=1
 
 @everywhere using ServiceMeshLearning, Hyperopt, Flux
 
@@ -54,7 +54,7 @@ nodes = readlines("/var/local/hosts")[1:16]
     value
 end
 
-tag = joinpath("HO_$(Dates.format(now(), "yymmdd_HHMMSS"))_simpleagent", "ho_search")
+tag = joinpath("HO_$(Dates.format(now(), "yymmdd_HHMMSS"))_seedsearch", "ho_search")
 
 @everywhere ho_params = Dict(pairs((;
     relative = :SimpleAgent,
@@ -68,7 +68,7 @@ tag = joinpath("HO_$(Dates.format(now(), "yymmdd_HHMMSS"))_simpleagent", "ho_sea
 )))
 
 ## Run experiment
-ho = @phyperopt for i = 200, 
+ho = @phyperopt for i = 20, 
         lr_alpha = [1f-5, 5f-5, 1f-4],
         target_entropy = [7f0, 10f0],
         # frames = 2:3,
@@ -99,16 +99,17 @@ ho = @phyperopt for i = 200,
         tag = joinpath("$(ho_params[:tag])", "$(i)"),
 
         # Set values
-        actfun=elu,
-        update_freq=10,
-        frames=2,
-        hidden_layers_policy=2, 
-        hidden_units_policy=50, 
-        hidden_layers_value=4, 
-        hidden_units_value=50, 
-        start_steps=50_000, 
-        update_after=1000,
-        replay_size=500_000, 
+        seed_iterations = 5,
+        actfun = elu,
+        update_freq = 10,
+        frames = 2,
+        hidden_layers_policy = 2, 
+        hidden_units_policy = 50, 
+        hidden_layers_value = 4, 
+        hidden_units_value = 50, 
+        start_steps = 50_000, 
+        update_after = 1000,
+        replay_size = 500_000, 
 
         # HO values
         lr_alpha, target_entropy, 
