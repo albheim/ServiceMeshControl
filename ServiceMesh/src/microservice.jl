@@ -18,6 +18,7 @@ function Base.show(io::IO, ms::Microservice)
 end
 function Base.show(io::IO, mss::Vector{Microservice})
     println("Microservices: ")
+    error("why are we here, shouldn't print?")
     for ms in mss
         println(io, ms)
     end
