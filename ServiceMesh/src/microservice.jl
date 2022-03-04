@@ -17,8 +17,7 @@ function Base.show(io::IO, ms::Microservice)
     print(io, "MS($(ms.running_nodes)->$(ms.target_nodes), +$(ms.booting_nodes), -$(ms.closing_nodes), $(ms.queue))")
 end
 function Base.show(io::IO, mss::Vector{Microservice})
-    println("Microservices: ")
-    error("why are we here, shouldn't print?")
+    println(io, "Microservices: ")
     for ms in mss
         println(io, ms)
     end
