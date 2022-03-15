@@ -34,17 +34,12 @@ function create_experiment(;
     env=:default,
     kwargs...
 )
-    if alg === :PPO
-        fullenv = MultiThreadEnv(() -> create_wrapped_env(; env, kwargs...), n_env)
-    elseif alg in [:SAC, :Guided, :DDPG, :TD3]
-        fullenv = create_wrapped_env(; env, kwargs...)
-    elseif alg in [:SimpleAgent, :ConstantAgent, :K8sAgent, :OracleAgent]
-        fullenv = create_env(; env, kwargs...)
-    else
-        error("Algorithm $(alg) not in env creation list.")
+    wrapped_env = default_wrappers(create_env(; env, kwargs...); kwargs...)
+    if alg in [:SAC, :Guided, :LoadedAgent]
+        wrapped_env = rl_wrappers(default_wrappers(wrapped_env; kwargs...); kwargs...)
     end
 
-    agent = create_agent(Val(alg); env=fullenv, n_env=n_env, kwargs...)
+    agent = create_agent(Val(alg); env=wrapped_env, n_env=n_env, kwargs...)
 
     hooks = AbstractHook[RunningReward(running_reward_steps; envmap = env -> env[!])]
     if logging
@@ -70,7 +65,7 @@ function create_experiment(;
 
     stop_condition = StopAfterStep(timesteps; is_show_progress=verbose)
 
-    Experiment(agent, fullenv, stop_condition, hooks, "## ServiceMesh $(tag)")
+    Experiment(agent, wrapped_env, stop_condition, hooks, "## ServiceMesh $(tag)")
 end
 
 function run_experiment(; verbose=true, kwargs...)

@@ -346,7 +346,7 @@ function create_env(; seed=37, env=:default, dt=0.5, kwargs...)
     end
 end
 
-function state_action_scaling_wrapper(env; frames=1, reward_scaling=0.001, closing_cost=0.0, state_smoothing=0.0, kwargs...)
+function rl_wrappers(env; frames=1, reward_scaling=0.001, state_smoothing=0.0, kwargs...)
     A = action_space(env)
     alow = [x isa UnitRange ? x.start : x.left for x in A]
     ahigh = [x isa UnitRange ? x.stop : x.right for x in A]
@@ -355,14 +355,6 @@ function state_action_scaling_wrapper(env; frames=1, reward_scaling=0.001, closi
     shigh = [x.right for x in S]
 
     wrapped_env = env
-    if closing_cost != 0
-        wrapped_env = RewardOverriddenEnv(wrapped_env, 
-            function(env)
-                num_closing = sum(ms->length(ms.closing_nodes), env.microservices)
-                reward(env) - closing_cost * num_closing
-            end
-        )
-    end
 
     wrapped_env = ActionTransformedEnv(
         StateTransformedEnv(
@@ -383,7 +375,17 @@ function state_action_scaling_wrapper(env; frames=1, reward_scaling=0.001, closi
     return wrapped_env
 end
 
-create_wrapped_env(; kwargs...) = state_action_scaling_wrapper(create_env(; kwargs...); kwargs...)
+function default_wrappers(env; closing_cost=0.0, kwargs...)
+    if closing_cost != 0
+        env = RewardOverriddenEnv(env, 
+            function(env)
+                num_closing = sum(ms->length(ms.closing_nodes), env.microservices)
+                reward(env) - closing_cost * num_closing
+            end
+        )
+    end
+    return env
+end
 
 
 # StateStacked wrapper
