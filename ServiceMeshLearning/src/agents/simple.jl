@@ -137,3 +137,24 @@ function (agent::OracleAgent)(env::AbstractEnv)
     highas = [as.right for as in env.action_space]
     return clamp.(a, lowas, highas)
 end
+
+
+"""
+    Loaded
+
+Loads bson saved policy and acts on it using mean values of actions
+"""
+mutable struct LoadedAgent{P<:GaussianNetwork} <: AbstractPolicy
+    policy::P
+end
+function create_agent(::Val{:LoadedAgent}; loadpath::String, kwargs...)
+    # Expects SAC, probably works with others with gaussian net
+    # Though make sure the correct env is used then
+    dict = BSON.load(loadpath)
+    LoadedAgent(dict[:policy].policy.model)
+end
+function (agent::LoadedAgent)(env::AbstractEnv)
+    s = state(env)
+    action_mean, action_std = agent.policy(s)
+    return action_mean
+end
