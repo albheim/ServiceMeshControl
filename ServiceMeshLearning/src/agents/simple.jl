@@ -88,28 +88,31 @@ Something similar to the k8s scaler
 """
 mutable struct K8sAgent <: AbstractPolicy
     desired_util::Float64
-    scaling_period::Float64
-    scaledown_memory::Int
+    step_tolerance::Float64
+    scale_memory::Matrix{Int}
+    mem_ptr::Int
 end
-create_agent(::Val{:K8sAgent}; desired_util=0.8, scaling_period=15.0, kwargs...) = K8sAgent(desired_util, scaling_period, 0)
+create_agent(::Val{:K8sAgent}; desired_util=0.8, stabilization_steps=300, step_tolerance=0.1, env, kwargs...) = K8sAgent(desired_util, step_tolerance, zeros(Int, length(env.microservices), stabilization_steps), 1)
 
 function (agent::K8sAgent)(env::AbstractEnv)
     env = env[!]
-    a = Int[ms.target_nodes for ms in env.microservices]
+
+    newptr = mod(agent.mem_ptr, size(agent.scale_memory, 2)) + 1
     for (i, ms) in enumerate(env.microservices)
-        desired = ceil(Int, length(ms.queue) / agent.desired_util)
-        if desired > ms.target_nodes
-            a[i] = min(desired, max(2 * a[i], a[i] + 4)) # Allowed to double or +4 in size, whichever is larger
-        elseif desired < ms.target_nodes
-            if agent.scaledown_memory < desired
-                agent.scaledown_memory = desired
-            end
-            if mod(env.time, agent.scaling_period) < env.steplength
-                a[i] = agent.scaledown_memory # Allowed to fully scale down, if largest action during scaling period wanted so
-                agent.scaledown_memory = 0
-            end
+        rn = max(1e-6, ms.running_nodes) # To avoid problems when running_nodes == 0
+        util = min(1, length(ms.queue) / rn)
+        ratio = util / agent.desired_util
+        if abs(ratio - 1) < agent.step_tolerance # No new action if within limit
+            agent.scale_memory[i, newptr] = agent.scale_memory[i, agent.mem_ptr]
+        else # Record new desired action
+            agent.scale_memory[i, newptr] = ceil(Int, rn * ratio)
         end
     end
+
+    agent.mem_ptr = newptr
+
+    a = vec(maximum(agent.scale_memory, dims=2)) # Take max of desired action in window
+
     lowas = [as.left for as in env.action_space]
     highas = [as.right for as in env.action_space]
     return clamp.(a, lowas, highas)
