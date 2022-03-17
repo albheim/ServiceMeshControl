@@ -294,8 +294,9 @@ function create_env(; seed=37, env=:default, dt=0.5, kwargs...)
                 path = collect(1:microservices), 
                 time = ones(microservices), 
                 deadline = microservices + 0.5, 
-                value = microservices * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
+                value = microservices * (instance_cost + 1) + 10, 
+                missed_value_fraction = 0.1,
+                arrival = FlippingArrival(dt/10, 0:3), 
             ),
         ]
         ServiceMeshEnv(;
