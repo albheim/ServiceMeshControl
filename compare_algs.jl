@@ -33,8 +33,8 @@ using ServiceMeshLearning, Flux
 
 hyperparams = Dict(pairs((;
     # Set params
-    tag = joinpath("HO_220224_154551", "len3_missedvalue"),
-    env = :simpleflipL3,
+    tag = joinpath("HO_220224_154551", "k8s_long_pretrain"),
+    env = :simpleflipsplit2v2uneven,
 
     # Optimized params
     lr_alpha = 5.0e-5,
@@ -42,7 +42,7 @@ hyperparams = Dict(pairs((;
     frames = 2,
     γ = 0.9,
     τ = 0.01,
-    start_steps = 50000,
+    start_steps = 10_000_000,
     update_after = 1000,
     replay_size = 500000,
     hidden_units_policy = 20,
@@ -60,7 +60,7 @@ hyperparams = Dict(pairs((;
     verbose = true,
     seed = 123,
     timesteps = 20_000_000,
-    start_policy = :RandomAgent,
+    start_policy = :K8sAgent,
 )))
 
 # Run RL + baselines locally with logging and different seed
