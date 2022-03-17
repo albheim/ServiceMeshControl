@@ -92,7 +92,7 @@ mutable struct K8sAgent <: AbstractPolicy
     scale_memory::Matrix{Int}
     mem_ptr::Int
 end
-create_agent(::Val{:K8sAgent}; desired_util=0.8, stabilization_steps=300, step_tolerance=0.1, env, kwargs...) = K8sAgent(desired_util, step_tolerance, zeros(Int, length(env.microservices), stabilization_steps), 1)
+create_agent(::Val{:K8sAgent}; desired_util=0.8, stabilization_steps=300, step_tolerance=0.1, env, kwargs...) = K8sAgent(desired_util, step_tolerance, zeros(Int, length(env[!].microservices), stabilization_steps), 1)
 
 function (agent::K8sAgent)(env::AbstractEnv)
     env = env[!]
