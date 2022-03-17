@@ -161,7 +161,7 @@ function RLBase.state(env::ServiceMeshEnv)
 end
 
 function RLBase.reward(env::ServiceMeshEnv)
-    value = sum(env.finished_jobs[i] * env.jobtypes[i].value for i in eachindex(env.finished_jobs)) 
+    value = sum((env.finished_jobs[i] + env.jobtypes[i].missed_value_fraction * env.missed_deadlines[i]) * env.jobtypes[i].value for i in eachindex(env.finished_jobs)) 
     cost = sum((ms.running_nodes + length(ms.booting_nodes) + length(ms.closing_nodes)) * ms.instance_cost for ms in env.microservices)
     return value - cost
 end

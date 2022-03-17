@@ -6,6 +6,7 @@ Base.@kwdef struct JobParams{TA<:AbstractArrival}
     time::Vector{Float64}
     deadline::Float64
     value::Float64
+    missed_value_fraction::Float64 = 0.0
     arrival::TA
 end
 
