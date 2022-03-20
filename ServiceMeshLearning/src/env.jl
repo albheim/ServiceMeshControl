@@ -285,6 +285,33 @@ function create_env(; seed=37, env=:default, dt=0.5, kwargs...)
             instance_cost = instance_cost, 
             seed = seed,
         )
+    elseif env === :simpleflipL3min1
+        dt = 1.0
+        instance_cost = 1.0
+        microservices = 3
+        jobtypes = JobParams[
+            JobParams(
+                path = collect(1:microservices), 
+                time = ones(microservices), 
+                deadline = microservices + 0.5, 
+                value = microservices * (instance_cost + 1) + 10, 
+                missed_value_fraction = 0.0,
+                arrival = FlippingArrival(dt/10, 0:3), 
+            ),
+        ]
+        ServiceMeshEnv(;
+            kwargs...,
+            microservices = microservices, 
+            jobtypes = jobtypes,
+            min_scale = 1,
+            max_scale = 10, 
+            max_queue = 5, 
+            close_time = 0.0, 
+            boot_time = 1.0, 
+            dt = dt,
+            instance_cost = instance_cost, 
+            seed = seed,
+        )
     elseif env === :simpleflipL3
         dt = 1.0
         instance_cost = 1.0

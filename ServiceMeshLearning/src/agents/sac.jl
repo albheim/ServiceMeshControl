@@ -70,7 +70,7 @@ function create_agent(
         start_steps = start_steps,
         update_after = update_after,
         update_freq = update_freq,
-        start_policy = create_agent(Val(start_policy); env),
+        start_policy = create_agent(Val(start_policy); env, kwargs...),
         automatic_entropy_tuning = true,
         lr_alpha = Float32(lr_alpha),
         action_dims = target_entropy, 

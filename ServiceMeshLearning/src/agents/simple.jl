@@ -124,7 +124,7 @@ end
 
 Optimal agent with assumption of knowledge of graph and delays, hardcoded for simpleflip env
 """
-mutable struct OracleAgent <: AbstractPolicy
+struct OracleAgent <: AbstractPolicy
 end
 create_agent(::Val{:OracleAgent}; kwargs...) = OracleAgent()
 
@@ -147,7 +147,7 @@ end
 
 Loads bson saved policy and acts on it using mean values of actions
 """
-mutable struct LoadedAgent{P<:GaussianNetwork} <: AbstractPolicy
+struct LoadedAgent{P<:GaussianNetwork} <: AbstractPolicy
     policy::P
 end
 function create_agent(::Val{:LoadedAgent}; loadpath::String, kwargs...)
@@ -160,4 +160,28 @@ function (agent::LoadedAgent)(env::AbstractEnv)
     s = state(env)
     action_mean, action_std = agent.policy(s)
     return action_mean
+end
+
+""" 
+    Wrapped
+
+Wraps an env that returns from the inner action space, to a normalized action space.
+"""
+struct WrappedAgent{P<:AbstractPolicy,F<:Function} <: AbstractPolicy
+    policy::P
+    action_transform::F
+end
+function create_agent(::Val{:WrappedAgent}; env, wrapped_policy, kwargs...)
+    A = action_space(env)
+    alow = [x isa UnitRange ? x.start : x.left for x in A]
+    ahigh = [x isa UnitRange ? x.stop : x.right for x in A]
+
+    action_mapping(a) = 2 .* (a .- alow) ./ (ahigh .- alow) .- 1
+    inner_agent = create_agent(Val(wrapped_policy); env=env[!], kwargs...)
+
+    WrappedAgent(inner_agent, action_mapping)
+end
+function (agent::WrappedAgent)(env::AbstractEnv)
+    a = agent.policy(env[!]) # Get action based on base env
+    return agent.action_transform(a)
 end
