@@ -74,7 +74,7 @@ function create_env(; seed=37, env=:default, dt=0.5, kwargs...)
                 time = Float64[1, 1, 1],
                 deadline = 3.5, 
                 value = 3 * (instance_cost + 1) + 10, 
-                missed_value_fraction = 0.1,
+                missed_value_fraction = 0.0,
                 arrival = FlippingArrival(dt/10, 0:4), 
             ),
             JobParams(
@@ -82,7 +82,7 @@ function create_env(; seed=37, env=:default, dt=0.5, kwargs...)
                 time = Float64[1, 1, 1],
                 deadline = 3.5, 
                 value = 3 * (instance_cost + 1) + 10, 
-                missed_value_fraction = 0.1,
+                missed_value_fraction = 0.0,
                 arrival = FlippingArrival(dt/10, 0:2), 
             ),
         ]
