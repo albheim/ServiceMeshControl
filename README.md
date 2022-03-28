@@ -40,3 +40,4 @@ To activate and run the plotting script do
 julia --project=plotting -e "imporg Pkg; Pkg.instantiate()"
 julia --project=plotting plotting/plotting_pgf.jl
 ```
+which should generate plots in tikz format in the folder `plotting/fig`.
