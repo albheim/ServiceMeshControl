@@ -14,7 +14,6 @@ using BSON
 
 using ServiceMesh
 
-include("util.jl")
 include("agents/guided_policy.jl") # Hooks need this and agents need hooks...
 include("hooks.jl")
 include("agents/agents.jl")
