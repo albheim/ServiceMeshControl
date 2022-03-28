@@ -4,18 +4,18 @@ function load_ho_values(path)
     (data, header) = readdlm(path, ','; header=true)
 end
 
-function loaddata(path)
+function loaddata(path; kwargs...)
     hist = MVHistory()
-    TensorBoardLogger.map_summaries(path) do tag, iter, val
-        push!(hist, Symbol(tag), iter, val)
+    TensorBoardLogger.map_summaries(path; kwargs...) do tag, step, val
+        push!(hist, Symbol(tag), step, val)
     end
     hist
 end
 
-function getvalues(data, name; smoothing_window=100, downsampling=1)
+function getvalues(data, name; smoothing_window=100, sample_range)
     values = data[name]
     smoothed = smooth(values.values, smoothing_window)
-    return smoothed[1:downsampling:end]
+    return smoothed[sample_range]
 end
 
 function gettime(data)
