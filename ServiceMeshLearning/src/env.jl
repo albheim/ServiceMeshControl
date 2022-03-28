@@ -1,307 +1,20 @@
-function create_env(; seed=37, env=:default, dt=0.5, kwargs...)
-    boot_time=2.0
-    instance_cost=1.0
-    if env === :simpleflipsplit2
+# Creating default envs
+function create_env(; seed=37, env=:simple, kwargs...)
+    if env === :single
         dt = 1.0
         instance_cost = 1.0
         jobtypes = JobParams[
             JobParams(
-                path = [1, 2, 3],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-            JobParams(
-                path = [1, 3, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-        ]
-        ServiceMeshEnv(;
-            kwargs...,
-            microservices = 4, 
-            jobtypes = jobtypes,
-            min_scale = 0,
-            max_scale = 10, 
-            max_queue = 5, 
-            close_time = 0.0, 
-            boot_time = 1.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-        )
-    elseif env === :simpleflipsplit2v2
-        dt = 1.0
-        instance_cost = 1.0
-        jobtypes = JobParams[
-            JobParams(
-                path = [1, 2, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-            JobParams(
-                path = [1, 3, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-        ]
-        ServiceMeshEnv(;
-            kwargs...,
-            microservices = 4, 
-            jobtypes = jobtypes,
-            min_scale = 0,
-            max_scale = 10, 
-            max_queue = 5, 
-            close_time = 0.0, 
-            boot_time = 1.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-        ) 
-    elseif env === :simpleflipsplit2v2uneven
-        dt = 1.0
-        instance_cost = 1.0
-        jobtypes = JobParams[
-            JobParams(
-                path = [1, 2, 4],
-                time = Float64[1, 1, 1],
+                path = collect(1:3), 
+                time = ones(3), 
                 deadline = 3.5, 
                 value = 3 * (instance_cost + 1) + 10, 
-                missed_value_fraction = 0.0,
-                arrival = FlippingArrival(dt/10, 0:4), 
-            ),
-            JobParams(
-                path = [1, 3, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 10, 
-                missed_value_fraction = 0.0,
-                arrival = FlippingArrival(dt/10, 0:2), 
-            ),
-        ]
-        ServiceMeshEnv(;
-            kwargs...,
-            microservices = 4, 
-            jobtypes = jobtypes,
-            min_scale = 0,
-            max_scale = 10, 
-            max_queue = 5, 
-            close_time = 0.0, 
-            boot_time = 1.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-        ) 
-    elseif env === :simpleflipsplit2v2closetime
-        dt = 1.0
-        instance_cost = 1.0
-        jobtypes = JobParams[
-            JobParams(
-                path = [1, 2, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-            JobParams(
-                path = [1, 3, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-        ]
-        ServiceMeshEnv(;
-            kwargs...,
-            microservices = 4, 
-            jobtypes = jobtypes,
-            min_scale = 0,
-            max_scale = 10, 
-            max_queue = 5, 
-            close_time = 1.0, 
-            boot_time = 1.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-        ) 
-    elseif env === :simpleflipsplit2vhighval
-        dt = 1.0
-        instance_cost = 1.0
-        jobtypes = JobParams[
-            JobParams(
-                path = [1, 2, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 60, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-            JobParams(
-                path = [1, 3, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 60, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-        ]
-        ServiceMeshEnv(;
-            kwargs...,
-            microservices = 4, 
-            jobtypes = jobtypes,
-            min_scale = 0,
-            max_scale = 10, 
-            max_queue = 5, 
-            close_time = 0.0, 
-            boot_time = 1.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-        ) 
-    elseif env === :simpleflipsplit3
-        dt = 0.1
-        instance_cost = 1.0
-        jobtypes = JobParams[
-            JobParams(
-                path = [1, 2, 3],
-                time = Float64[0.2, 1, 0.1],
-                deadline = 2.0, 
-                value = 10.0, 
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-            JobParams(
-                path = [1, 3, 4],
-                time = Float64[0.2, 0.1, 0.7],
-                deadline = 2.0, 
-                value = 10.0,
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-        ]
-        ServiceMeshEnv(;
-            kwargs...,
-            microservices = 4, 
-            jobtypes = jobtypes,
-            min_scale = 0,
-            max_scale = 40, 
-            max_queue = 5, 
-            close_time = 0.0, 
-            boot_time = 1.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-        )
-    elseif env === :simpleflipsplit4
-        dt = 1.0
-        instance_cost = 1.0
-        jobtypes = JobParams[
-            JobParams(
-                path = [1, 2, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-            JobParams(
-                path = [1, 3, 4],
-                time = Float64[1, 1, 1],
-                deadline = 3.5, 
-                value = 3 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-        ]
-        ServiceMeshEnv(;
-            kwargs...,
-            microservices = 4, 
-            jobtypes = jobtypes,
-            min_scale = 0,
-            max_scale = 10, 
-            max_queue = 5, 
-            close_time = 0.0, 
-            boot_time = 1.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-        )
-    elseif env === :simpleflipsplit
-        dt = 1.0
-        instance_cost = 1.0
-        jobtypes = JobParams[
-            JobParams(
-                path = [1, 2],
-                time = Float64[1, 1],
-                deadline = 2.5, 
-                value = 2 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-            JobParams(
-                path = [1, 3],
-                time = Float64[1, 1],
-                deadline = 2.5, 
-                value = 2 * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-        ]
-        ServiceMeshEnv(;
-            kwargs...,
-            microservices = 3, 
-            jobtypes = jobtypes,
-            min_scale = 0,
-            max_scale = 10, 
-            max_queue = 5, 
-            close_time = 0.0, 
-            boot_time = 1.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-        )
-    elseif env === :simpleflip
-        dt = 1.0
-        instance_cost = 1.0
-        microservices = 2
-        jobtypes = JobParams[
-            JobParams(
-                path = collect(1:microservices), 
-                time = ones(microservices), 
-                deadline = microservices + 0.5, 
-                value = microservices * (instance_cost + 1) + 6, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-        ]
-        ServiceMeshEnv(;
-            kwargs...,
-            microservices = microservices, 
-            jobtypes = jobtypes,
-            min_scale = 0,
-            max_scale = 10, 
-            max_queue = 5, 
-            close_time = 0.0, 
-            boot_time = 1.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-        )
-    elseif env === :simpleflipL3min1
-        dt = 1.0
-        instance_cost = 1.0
-        microservices = 3
-        jobtypes = JobParams[
-            JobParams(
-                path = collect(1:microservices), 
-                time = ones(microservices), 
-                deadline = microservices + 0.5, 
-                value = microservices * (instance_cost + 1) + 10, 
-                missed_value_fraction = 0.0,
                 arrival = FlippingArrival(dt/10, 0:3), 
             ),
         ]
         ServiceMeshEnv(;
             kwargs...,
-            microservices = microservices, 
+            microservices = 3, 
             jobtypes = jobtypes,
             min_scale = 1,
             max_scale = 10, 
@@ -312,25 +25,30 @@ function create_env(; seed=37, env=:default, dt=0.5, kwargs...)
             instance_cost = instance_cost, 
             seed = seed,
         )
-    elseif env === :simpleflipL3
+    elseif env === :double
         dt = 1.0
         instance_cost = 1.0
-        microservices = 3
         jobtypes = JobParams[
             JobParams(
-                path = collect(1:microservices), 
-                time = ones(microservices), 
-                deadline = microservices + 0.5, 
-                value = microservices * (instance_cost + 1) + 10, 
-                missed_value_fraction = 0.1,
-                arrival = FlippingArrival(dt/10, 0:3), 
+                path = [1, 2, 4],
+                time = Float64[1, 1, 1],
+                deadline = 3.5, 
+                value = 3 * (instance_cost + 1) + 10, 
+                arrival = FlippingArrival(dt/10, 0:4), 
+            ),
+            JobParams(
+                path = [1, 3, 4],
+                time = Float64[1, 1, 1],
+                deadline = 3.5, 
+                value = 3 * (instance_cost + 1) + 10, 
+                arrival = FlippingArrival(dt/10, 0:2), 
             ),
         ]
         ServiceMeshEnv(;
             kwargs...,
-            microservices = microservices, 
+            microservices = 4, 
             jobtypes = jobtypes,
-            min_scale = 0,
+            min_scale = 1,
             max_scale = 10, 
             max_queue = 5, 
             close_time = 0.0, 
@@ -338,44 +56,13 @@ function create_env(; seed=37, env=:default, dt=0.5, kwargs...)
             dt = dt,
             instance_cost = instance_cost, 
             seed = seed,
-        )
-    elseif env === :complex
-        dt = 0.1
-        instance_cost = 1.0
-        jobtypes = JobParams[
-            JobParams(
-                path = [1, 2, 4, 2, 1], 
-                time = [0.1, 0.1, 0.2, 0.4, 0.1], 
-                deadline = 1.5, 
-                value = 10.0, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-            JobParams(
-                path = [1, 3, 4, 3, 1],
-                time = [0.1, 0.2, 0.4, 0.1, 0.1],
-                deadline = 1.5, 
-                value = 10.0, # In case of booting factor 2 could help with not finding strange minima?
-                arrival = FlippingArrival(dt/10, 0:3), # On average flip every 10 seconds and take step to neighbouring load in range 
-            ),
-        ]
-        ServiceMeshEnv(;
-            kwargs...,
-            microservices = 4, 
-            jobtypes = jobtypes,
-            min_scale = 0,
-            max_scale = 20, 
-            max_queue = 10, 
-            close_time = 5.0, 
-            boot_time = 5.0, 
-            dt = dt,
-            instance_cost = instance_cost, 
-            seed = seed,
-        )
+        ) 
     else
         throw(ArgumentError("no env for that tag."))
     end
 end
 
+# Wrap env in common RL wrappers
 function rl_wrappers(env; frames=1, reward_scaling=0.001, state_smoothing=0.0, kwargs...)
     A = action_space(env)
     alow = [x isa UnitRange ? x.start : x.left for x in A]
@@ -405,6 +92,7 @@ function rl_wrappers(env; frames=1, reward_scaling=0.001, state_smoothing=0.0, k
     return wrapped_env
 end
 
+# Wrap env in common wrappers
 function default_wrappers(env; closing_cost=0.0, kwargs...)
     if closing_cost != 0
         env = RewardOverriddenEnv(env, 

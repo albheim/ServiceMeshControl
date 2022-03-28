@@ -5,7 +5,9 @@ gr()
 ## Environment setup
 using DistributedEnvironments
 
-nodes = readlines("/var/local/hosts")[1:16]
+# Change this to contain a list of ip addresses to the nodes of your cluster
+# which are accessible by ssh key 
+nodes = readlines("/var/local/hosts") 
 @initcluster nodes sync=true workers_per_machine=1
 
 @everywhere using ServiceMeshLearning, Hyperopt, Flux
@@ -125,6 +127,7 @@ end
 ## Visualize and save experiment
 plot(ho, size=(1200, 900))
 
+# Save variables as txt
 fpath = joinpath("$(ho_params[:basepath])", "$(ho_params[:env])", "$(ho_params[:tag])")
 mkpath(fpath)
 open(joinpath(fpath, "HO_maximizer.txt"), "w") do io
@@ -139,5 +142,6 @@ open(joinpath(fpath, "HO_maximizer.txt"), "w") do io
     # printmax(io, ho)
 end
 
+# Save full hyperopt as BSON
 using BSON
 BSON.@save joinpath("$(ho_params[:basepath])", "$(ho_params[:env])", "$(ho_params[:tag])", "HO_maximizer.bson") ho=ho
