@@ -57,6 +57,45 @@ function create_env(; seed=37, env=:simple, kwargs...)
             instance_cost = instance_cost, 
             seed = seed,
         ) 
+    elseif env === :double_new
+        dt = 1.0
+        instance_cost = 1.0
+        jobtypes = JobParams[
+            JobParams(
+                path = [1, 2, 4],
+                time = Float64[1, 1, 1],
+                deadline = 3.5, 
+                value = 3 * (instance_cost + 1) + 10, 
+                arrival = TimeDependentFlippingArrival(dt/10, t -> (0, 4 + 4 * (t < 0.666e7))),
+            ),
+            JobParams(
+                path = [1, 3, 4],
+                time = Float64[1, 1, 1],
+                deadline = 3.5, 
+                value = 3 * (instance_cost + 1) + 10, 
+                arrival = FlippingArrival(dt/10, 0:2),
+            ),
+            JobParams(
+                path = [1, 3, 2],
+                time = Float64[1, 1, 1],
+                deadline = 3.5, 
+                value = 3 * (instance_cost + 1) + 10, 
+                arrival = TimeDependentFlippingArrival(dt/10, t -> (0, 2 * (t > 1.333e7))),
+            ),
+        ]
+        ServiceMeshEnv(;
+            kwargs...,
+            microservices = 4, 
+            jobtypes = jobtypes,
+            min_scale = 1,
+            max_scale = 10, 
+            max_queue = 5, 
+            close_time = 0.0, 
+            boot_time = 1.0, 
+            dt = dt,
+            instance_cost = instance_cost, 
+            seed = seed,
+        ) 
     else
         throw(ArgumentError("no env for that tag."))
     end

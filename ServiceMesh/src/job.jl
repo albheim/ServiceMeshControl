@@ -85,3 +85,23 @@ function get_arrivals(rng, a::FlippingArrival, time)
     return a.values[a.idx]
 end
 interval(a::FlippingArrival) = minimum(a.values)..maximum(a.values)
+
+# Similar to the one above, can imagine it as the same but with random duration and constraint
+# that at most one load is added or removed each step
+mutable struct TimeDependentFlippingArrival{F} <: AbstractArrival
+    rate::Float64
+    range_func::F
+    val::Int
+    TimeDependentFlippingArrival(rate, range_func) = new{typeof(range_func)}(rate, range_func, range_func(0)[1])
+end
+function get_arrivals(rng, a::TimeDependentFlippingArrival, time) 
+    if rand(rng) < a.rate 
+        vmin, vmax = a.range_func(time)
+        a.val = rand(rng, max(vmin, a.val - 1):min(vmax, a.val + 1))
+    end
+    return a.val
+end
+function interval(a::TimeDependentFlippingArrival) 
+    vmin, vmax = a.range_func(0)
+    vmin..vmax
+end
