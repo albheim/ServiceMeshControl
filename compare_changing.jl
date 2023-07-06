@@ -3,7 +3,7 @@ using ServiceMeshLearning, Flux
 hyperparams = Dict(pairs((;
     # Set params
     tag = "random_initial",
-    env = :double,
+    env = :double_new,
 
     # Optimized params
     lr_alpha = 5.0e-5,
