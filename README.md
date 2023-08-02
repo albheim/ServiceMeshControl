@@ -41,3 +41,5 @@ julia --project=plotting -e "imporg Pkg; Pkg.instantiate()"
 julia --project=plotting plotting/plotting_pgf.jl
 ```
 which should generate plots in tikz format in the folder `plotting/fig`.
+
+There is also the file `save_to_csv.jl` which can be used to export the data to csv format.
