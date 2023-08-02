@@ -2,7 +2,7 @@ using ServiceMeshLearning, Flux
 
 hyperparams = Dict(pairs((;
     # Set params
-    tag = "random_initial",
+    tag = "50days",
     env = :double_new,
 
     # Optimized params
@@ -28,7 +28,7 @@ hyperparams = Dict(pairs((;
     logging = true,
     verbose = true,
     seed = 24837293,
-    timesteps = 20_000_000,
+    timesteps = 60*60*24*50,
     start_policy = :RandomAgent,
 )))
 

@@ -3,7 +3,7 @@ using ServiceMeshLearning, Flux
 hyperparams = Dict(pairs((;
     # Set params
     tag = "50days",
-    env = :double,
+    env = :double_value,
 
     # Optimized params
     lr_alpha = 5.0e-5,
