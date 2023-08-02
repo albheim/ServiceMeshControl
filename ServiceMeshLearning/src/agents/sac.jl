@@ -2,6 +2,7 @@ function create_agent(
     ::Val{:SAC}; 
     env,
     seed=37, 
+    lr_opt=0.003,
     lr_alpha=0.0001f0, 
     alpha=0.2f0,
     γ=0.99f0,
@@ -45,7 +46,7 @@ function create_agent(
             # max_σ = 1f3, 
             # Not setting them means -Inf32..Inf32
         ),
-        optimizer = ADAM(0.003),
+        optimizer = ADAM(lr_opt),
     )
 
     create_q_net() = NeuralNetworkApproximator(
@@ -54,7 +55,7 @@ function create_agent(
             [Dense(hidden_units_value, hidden_units_value, actfun; init=init) for i in 2:hidden_layers_value]...,
             Dense(hidden_units_value, 1; init=init),
         ),
-        optimizer = ADAM(0.003),
+        optimizer = ADAM(lr_opt),
     )
 
     policy = SACPolicy(
